@@ -82,7 +82,8 @@ class Monster:
         self.name2 = "Special_02"
         self.image = image
         self.flipped_image = flipped_image
-        self.status_effects = {}
+        self.poison = 0
+        self.stun = 0
         self.cooldown1 = 0
         self.cooldown2 = 0
 
@@ -118,8 +119,13 @@ class Monster:
             surface.blit(self.image, (self.x, self.y))
     
     def update(self):
-        for i in range(len(self.status_effects)):
-            self.status_effects[i] -= 1
+        self.poison = max(0, self.poison - 1)
+        if self.poison > 0:
+            self.take_damage(5)
+            return f"{self.name} is poisoned and takes 5 damage!"
+        self.stun = max(0, self.stun - 1)
+        #if self.stun > 0:
+        #    self.attack -= 5
 
 class Dracula(Monster):
     def __init__(self, x, y):
