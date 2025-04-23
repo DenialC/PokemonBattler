@@ -226,7 +226,7 @@ class Adventurer(Monster):
 def message_display(message_log, font):
     log_y = 400
     for i, message in enumerate(message_log[-5:]): 
-        message_text = font.render(message, True, (205,205,205))
+        message_text = font.render(message, True, ORANGE)
         screen.blit(message_text, (250, log_y + i * 20))
 
 def draw_text(msg, color, x, y, size, center=True):
@@ -338,6 +338,7 @@ def game_loop(state):
                 enemy_monster = random.choice([Neanderthal(1000,150), Spinosaurus(1000,150), Dracula(1000,150), Cleric(1000,150), Adventurer(1000,150)])
         if game_State == "Battle" and not executed:
             screen.fill(WHITE)
+            screen.blit(background_image, (0, 0))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
@@ -353,6 +354,7 @@ def game_loop(state):
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    #error occurs when you press the button, the sprites buffer and layer
                     mouse_pos = pygame.mouse.get_pos()
                     if button_1_select.collidepoint(mouse_pos):
                         action = "attack"
@@ -417,7 +419,7 @@ def game_loop(state):
             keys = pygame.key.get_pressed()
             if keys[pygame.K_i]:
                 for i, message in enumerate(stats[-8:]): 
-                    message_text = font.render(message, True, (205,205,205))
+                    message_text = font.render(message, True, ORANGE)
                     screen.blit(message_text, (50, 0 + i * 20))
             timer += 1
             timer3 += 1
