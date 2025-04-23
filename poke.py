@@ -32,6 +32,9 @@ fire_img = pygame.image.load('fireball.png')
 fire = pygame.transform.scale(fire_img, (100, 100))
 fire_flipped = pygame.transform.flip(fire, True, False)
 
+background_image = pygame.image.load("backgroundreal.png").convert()
+background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+
 WHITE = (55, 55, 55)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
@@ -335,6 +338,7 @@ def game_loop(state):
                 enemy_monster = random.choice([Neanderthal(1000,150), Spinosaurus(1000,150), Dracula(1000,150), Cleric(1000,150), Adventurer(1000,150)])
         if game_State == "Battle" and not executed:
             screen.fill(WHITE)
+            screen.blit(background_image, (0, 0))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
