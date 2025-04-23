@@ -338,20 +338,20 @@ def game_loop(state):
                 enemy_monster = random.choice([Neanderthal(1000,150), Spinosaurus(1000,150), Dracula(1000,150), Cleric(1000,150), Adventurer(1000,150)])
         if game_State == "Battle" and not executed:
             screen.fill(WHITE)
-            screen.blit(background_image, (0, 0))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
-            pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
-            draw_text("Basic Attack", RED, 50, 700, 24, center=False)
-            pygame.draw.rect(screen, RED, (500, 700, 200, 150))
-            draw_text(char.name3, BLUE, 500, 700, 24, center=False)
-            pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
-            draw_text(char.name4, YELLOW, 1000, 700, 24, center=False)
-            char.draw(screen, flip=False)  
-            enemy_monster.draw(screen, flip=True)  
         if game_State == "Battle":
             if char.alive and enemy_monster.alive and timer > 100:
+                screen.blit(background_image, (0, 0))
+                pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
+                draw_text("Basic Attack", RED, 50, 700, 24, center=False)
+                pygame.draw.rect(screen, RED, (500, 700, 200, 150))
+                draw_text(char.name3, BLUE, 500, 700, 24, center=False)
+                pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
+                draw_text(char.name4, YELLOW, 1000, 700, 24, center=False)
+                char.draw(screen, flip=False)  
+                enemy_monster.draw(screen, flip=True)  
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if button_1_select.collidepoint(mouse_pos):
@@ -374,11 +374,11 @@ def game_loop(state):
                         else:
                             message_log.append(f"{char.name4} is on cooldown for {char.cooldown2} turns")
                             timer = 0
-            pygame.draw.rect(screen, (55, 55, 55), (150, 400, 900, 300))
-            pygame.draw.rect(screen, (55,55,55), (50, 0, 160, 400))
+            #pygame.draw.rect(screen, (55, 55, 55), (150, 400, 900, 300))
+            #pygame.draw.rect(screen, (55,55,55), (50, 0, 160, 400))
             if timer3%10 == 0:
-                pygame.draw.rect(screen, (55,55,55), (char.x, char.y-100, 1000, 500))
-                pygame.draw.rect(screen, (55,55,55), (enemy_monster.x, enemy_monster.y-100, 1000, 500))
+                #pygame.draw.rect(screen, (55,55,55), (char.x, char.y-100, 1000, 500))
+                #pygame.draw.rect(screen, (55,55,55), (enemy_monster.x, enemy_monster.y-100, 1000, 500))
                 if row == 12:
                     row = 0
                     if curr == False:
