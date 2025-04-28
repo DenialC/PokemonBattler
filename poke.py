@@ -35,6 +35,9 @@ fire_flipped = pygame.transform.flip(fire, True, False)
 background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
+scoreboard_image = pygame.image.load("scoreboard.png").convert()
+scoreboard_image = pygame.transform.scale(scoreboard_image, (250, 150))
+
 WHITE = (55, 55, 55)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
@@ -230,10 +233,10 @@ class Adventurer(Monster):
             return f"{self.name} uses Ambush on {target.name} but it fails and damages itself for {damage} damage!"
 
 def message_display(message_log, font):
-    log_y = 400
+    log_y = 650
     for i, message in enumerate(message_log[-5:]): 
         message_text = font.render(message, True, ORANGE)
-        screen.blit(message_text, (250, log_y + i * 20))
+        screen.blit(message_text, (550, log_y + i * 20))
 
 def draw_text(msg, color, x, y, size, center=True):
     font = pygame.font.SysFont("Trebuchet MS", size)
@@ -324,39 +327,44 @@ def game_loop(state):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if button_1_select.collidepoint(mouse_pos):
-                    char = Spinosaurus(200, 150)
+                    char = Spinosaurus(200, 450)
                     game_State = "Battle"
                     executed = False
                 elif button_2_select.collidepoint(mouse_pos):
                     if txt2 == "Adventurer":
-                        char = Adventurer(200, 150)
+                        char = Adventurer(200, 450)
                     elif txt2 == "Dracula":
-                        char = Dracula(200, 150)
+                        char = Dracula(200, 450)
                     game_State = "Battle"
                     executed = False
                 elif button_3_select.collidepoint(mouse_pos):
                     if txt1 == "Cleric":
-                        char = Cleric(200, 150)
+                        char = Cleric(200, 450)
                     elif txt1 == "Neanderthal":
-                        char = Neanderthal(200, 150)
+                        char = Neanderthal(200, 450)
                     game_State = "Battle"
                     executed = False
-                enemy_monster = random.choice([Neanderthal(1000,150), Spinosaurus(1000,150), Dracula(1000,150), Cleric(1000,150), Adventurer(1000,150)])
+                enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
         if game_State == "Battle" and not executed:
             screen.fill(WHITE)
             screen.blit(background_image, (0, 0))
+            screen.blit(scoreboard_image, (550, 650))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
         if game_State == "Battle":
             if char.alive and enemy_monster.alive and timer > 100:
                 screen.blit(background_image, (0, 0))
-                pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
-                draw_text("Basic Attack", RED, 50, 700, 24, center=False)
-                pygame.draw.rect(screen, RED, (500, 700, 200, 150))
-                draw_text(char.name3, BLUE, 500, 700, 24, center=False)
-                pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
-                draw_text(char.name4, YELLOW, 1000, 700, 24, center=False)
+                screen.blit(scoreboard_image, (550, 650))
+                button_1_select = pygame.Rect(0, 650, 200, 150)
+                button_2_select = pygame.Rect(0, 350, 200, 150)
+                button_3_select = pygame.Rect(0, 50, 200, 150)
+                pygame.draw.rect(screen, GREEN, (0, 650, 200, 150))
+                draw_text("Basic Attack", RED, 25, 650, 24, center=False)
+                pygame.draw.rect(screen, RED, (0, 350, 200, 150))
+                draw_text(char.name3, BLUE, 25, 350, 24, center=False)
+                pygame.draw.rect(screen, BLUE, (0, 50, 200, 150))
+                draw_text(char.name4, YELLOW, 25, 50, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
                 if event.type == pygame.MOUSEBUTTONDOWN:
