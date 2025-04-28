@@ -32,7 +32,7 @@ fire_img = pygame.image.load('fireball.png')
 fire = pygame.transform.scale(fire_img, (100, 100))
 fire_flipped = pygame.transform.flip(fire, True, False)
 
-background_image = pygame.image.load("backgroundreal.png").convert()
+background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
 WHITE = (55, 55, 55)
