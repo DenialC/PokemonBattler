@@ -46,8 +46,7 @@ icon2_image = pygame.transform.scale(icon2_imag, (icon_radius, icon_radius))
 icon3_imag = pygame.image.load('icon3.png').convert_alpha()
 icon3_image = pygame.transform.scale(icon3_imag, (icon_radius, icon_radius))
 
-
-WHITE = (55, 55, 55)
+GREYISH = (55, 55, 55)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
@@ -321,7 +320,7 @@ def game_loop(state):
             if event.type == pygame.QUIT:
                 running = False
         if game_State == "Menu" and not executed:
-            screen.fill(WHITE)
+            screen.fill(GREYISH)
             message_log.append("Choose your fighter to begin!")
             pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
             draw_text("Spinosaurus", RED, 50, 700, 24, center=False)
@@ -359,14 +358,14 @@ def game_loop(state):
                     executed = False
                 enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
         if game_State == "Battle" and not executed:
-            screen.fill(WHITE)
+            screen.fill(GREYISH)
             screen.blit(background_image, (0, 0))
             screen.blit(scoreboard_image, (550, 550))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
         if game_State == "Battle":
-            if char.alive and enemy_monster.alive and timer > 100:
+            if char.alive and timer > 100:
                 screen.blit(background_image, (0, 0))
                 screen.blit(scoreboard_image, (550, 550))
                 button_1_select = pygame.Rect(0, 650, 200, 150)
@@ -406,11 +405,18 @@ def game_loop(state):
                         else:
                             message_log.append(f"{char.name4} is on cooldown for {char.cooldown2} turns")
                             timer = 0
-            #pygame.draw.rect(screen, (55, 55, 55), (150, 400, 900, 300))
-            #pygame.draw.rect(screen, (55,55,55), (50, 0, 160, 400))
+            if char.alive == False:
+                message_log.append(f"Mission failed, we'll get em next time!") # get sound effect for this off youtube
+                game_State = "Menu"
+                executed = False
+            if enemy_monster.alive == False:
+                message_log.append(f"{enemy_monster.name} has been slain!")
+                upgrade_tokens = random.randint(1, 3)
+                message_log.append(f"You have been awarded {upgrade_tokens} upgrade tokens!")
+                game_State = "Upgrade_Menu"
+                executed = False
+
             if timer3%10 == 0:
-                #pygame.draw.rect(screen, (55,55,55), (char.x, char.y-100, 1000, 500))
-                #pygame.draw.rect(screen, (55,55,55), (enemy_monster.x, enemy_monster.y-100, 1000, 500))
                 if row == 12:
                     row = 0
                     if curr == False:
@@ -453,9 +459,41 @@ def game_loop(state):
                     screen.blit(message_text, (50, 0 + i * 20))
             timer += 1
             timer3 += 1
+        if game_State == "Upgrade_Menu" and not executed:
+            screen.fill(GREYISH)
+            message_log.append("Choose your upgrade!")
+            pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
+            draw_text("Attack", RED, 50, 700, 24, center=False)
+            pygame.draw.rect(screen, RED, (500, 700, 200, 150))
+            draw_text("Defense", BLUE, 500, 700, 24, center=False)
+            pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
+            draw_text("Speed", YELLOW, 1000, 700, 24, center=False)
+            button_1_select = pygame.Rect(50, 700, 200, 150)
+            button_2_select = pygame.Rect(500, 700, 200, 150)
+            button_3_select = pygame.Rect(1000, 700, 200, 150)
+        if game_State == "Upgrade_Menu":
+            message_display(message_log, font)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if button_1_select.collidepoint(mouse_pos):
+                        char.attack += 5
+                        char.cooldown1 = 0
+                        char.cooldown2 = 0
+                        message_log.append(f"{char.name} has gained 5 attack!")
+                    elif button_2_select.collidepoint(mouse_pos):
+                        char.health = char.max_health + 5
+                        char.max_health += 5
+                        char.defense += 5
+                        message_log.append(f"{char.name} has gained 5 health and 5 defense!")
+                    elif button_3_select.collidepoint(mouse_pos):
+                        char.speed += 5
+                        message_log.append(f"{char.name} has gained 5 speed!")
         pygame.display.update()
         pygame.display.flip()
     pygame.quit()
 
 if __name__ == "__main__":
     game_loop("Menu")
+
+
+#sounds anyone?
