@@ -35,8 +35,17 @@ fire_flipped = pygame.transform.flip(fire, True, False)
 background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
-scoreboard_image = pygame.image.load("scoreboard.png").convert()
-scoreboard_image = pygame.transform.scale(scoreboard_image, (250, 150))
+scoreboard_imag = pygame.image.load("scoreboard.png").convert_alpha() # had some transparency issues so using convert_alpha here and henceforth
+scoreboard_image = pygame.transform.scale(scoreboard_imag, (550, 250))
+
+icon_radius = 150
+icon1_imag = pygame.image.load('icon1.png').convert_alpha()
+icon1_image = pygame.transform.scale(icon1_imag, (icon_radius, icon_radius))
+icon2_imag = pygame.image.load('icon2.png').convert_alpha()
+icon2_image = pygame.transform.scale(icon2_imag, (icon_radius, icon_radius))
+icon3_imag = pygame.image.load('icon3.png').convert_alpha()
+icon3_image = pygame.transform.scale(icon3_imag, (icon_radius, icon_radius))
+
 
 WHITE = (55, 55, 55)
 GREEN = (0, 255, 0)
@@ -127,6 +136,10 @@ class Monster:
             self.take_damage(5)
             return f"{self.name} is poisoned and takes 5 damage!"
         self.stun = max(0, self.stun - 1)
+        if self.stun > 0:
+            self.cooldown1 += 1
+            self.cooldown2 += 1
+            return f"{self.name} is stunned and has its cooldowns increased!"
         #if self.stun > 0:
         #    self.attack -= 5
 
@@ -348,22 +361,25 @@ def game_loop(state):
         if game_State == "Battle" and not executed:
             screen.fill(WHITE)
             screen.blit(background_image, (0, 0))
-            screen.blit(scoreboard_image, (550, 650))
+            screen.blit(scoreboard_image, (550, 550))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
         if game_State == "Battle":
             if char.alive and enemy_monster.alive and timer > 100:
                 screen.blit(background_image, (0, 0))
-                screen.blit(scoreboard_image, (550, 650))
+                screen.blit(scoreboard_image, (550, 550))
                 button_1_select = pygame.Rect(0, 650, 200, 150)
                 button_2_select = pygame.Rect(0, 350, 200, 150)
                 button_3_select = pygame.Rect(0, 50, 200, 150)
-                pygame.draw.rect(screen, GREEN, (0, 650, 200, 150))
+                screen.blit(icon1_image, (0, 650))
+                screen.blit(icon2_image, (0, 350))
+                screen.blit(icon3_image, (0, 50))
+                #pygame.draw.rect(screen, GREEN, (0, 650, 200, 150))
                 draw_text("Basic Attack", RED, 25, 650, 24, center=False)
-                pygame.draw.rect(screen, RED, (0, 350, 200, 150))
+                #pygame.draw.rect(screen, RED, (0, 350, 200, 150))
                 draw_text(char.name3, BLUE, 25, 350, 24, center=False)
-                pygame.draw.rect(screen, BLUE, (0, 50, 200, 150))
+                #pygame.draw.rect(screen, BLUE, (0, 50, 200, 150))
                 draw_text(char.name4, YELLOW, 25, 50, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
