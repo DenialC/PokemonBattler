@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import time
 
 pygame.init()
 
@@ -107,6 +108,8 @@ class Monster:
         self._current_health = max(0, self._current_health - actual_damage)
         if self._current_health == 0:
             self.alive = False
+        for i in range(75):
+            particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-5,5), random.uniform(-5,5)), 25))
         return actual_damage
 
     def heal(self, amount):
@@ -114,8 +117,6 @@ class Monster:
 
     def basic_attack(self, target):
         damage = target.take_damage(self.attack)
-        for i in range(100):
-            particles.append(Particle(self.x + 10 * i, self.y - 25, RED, (random.uniform(-10,10), random.uniform(-10,10)), 30))
         return f"{self.name} attacks {target.name} for {damage} damage!"
     def special_attack1(self, target):
         pass 
@@ -161,7 +162,7 @@ class Dracula(Monster):
         self.cooldown2 = 2
         return f"{self.name} uses Blood Drain on {target.name} for {damage} damage and lowers their defense by 6!"
 
-class Spinosaurus(Monster):
+class Spinosaurus(Monster): # perhaps add another class to switch out from the spino like all the other classes have
     def __init__(self, x, y):
         super().__init__(100, 10, 5, 51, "Spinosaurus", x, y, 50, 50, spino, spino_flipped)
         self.name3 = "Regenerative Roar"
@@ -205,14 +206,14 @@ class Cleric(Monster):
         damage = self.attack * 3 + target.defense - random.randint(1,15)
         target.take_damage(damage)
         self.cooldown1 = 2
-        timer69 = 0
-        x = self.x
-        y = self.y
-        while timer69 < 1000:
-            if timer69%5 == 0:
-                screen.blit(fire, (x, y))
-                x += 10
-            timer69 += 1
+        #timer69 = 0
+        #x = self.x
+        #y = self.y
+        #while timer69 < 1000:
+        #    if timer69%5 == 0:
+        #        screen.blit(fire, (x, y))
+        #        x += 10
+        #    timer69 += 1
         return f"{self.name} uses Divine Smite on {target.name} for {damage - target.defense} damage, ignoring all defense!"
 
     def special_attack2(self, target):
@@ -271,6 +272,8 @@ def Turn(action, enemy_monster, char, message_log):
         elif action == "special_02":
             result = char.special_attack2(enemy_monster)
             message_log.append(result)
+        message_display(message_log, pygame.font.SysFont(None, 24))
+        time.sleep(random.randint(1,3))
         if enemy_monster.alive == True:
             if enemy_monster.cooldown1 <= 0:
                 enemy_attack = enemy_monster.special_attack1
@@ -289,6 +292,8 @@ def Turn(action, enemy_monster, char, message_log):
             enemy_attack = enemy_monster.basic_attack
         result = enemy_attack(char)
         message_log.append(result)
+        message_display(message_log, pygame.font.SysFont(None, 24))
+        time.sleep(random.randint(1,3))
         if char.alive == True:
             if action == "attack":
                 result = char.basic_attack(enemy_monster)
@@ -499,7 +504,7 @@ def game_loop(state):
                         timer = 0
                 elif button_2_select.collidepoint(mouse_pos):
                     if upgrade_tokens > 0:
-                        char.health = char.max_health + 5
+                        char._current_health = char.max_health + 5
                         char.max_health += 5
                         char.defense += 5
                         message_log.append(f"{char.name} has gained 5 health and 5 defense!")
@@ -518,7 +523,7 @@ def game_loop(state):
             timer += 1
         if game_State == "Reset_Battle" and not executed:
             enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
-            enemy_monster.health = enemy_monster.max_health + 5
+            enemy_monster._current_health = enemy_monster.max_health + 5
             enemy_monster.max_health += 5
             enemy_monster.attack = enemy_monster.attack + 5
             enemy_monster.defense = enemy_monster.defense
