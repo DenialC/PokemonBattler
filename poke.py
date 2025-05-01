@@ -271,14 +271,15 @@ def Turn(action, enemy_monster, char, message_log):
         elif action == "special_02":
             result = char.special_attack2(enemy_monster)
             message_log.append(result)
-        if enemy_monster.cooldown1 <= 0:
-            enemy_attack = enemy_monster.special_attack1
-        elif enemy_monster.cooldown2 <= 0:
-            enemy_attack = enemy_monster.special_attack2
-        else:
-            enemy_attack = enemy_monster.basic_attack
-        result = enemy_attack(char)
-        message_log.append(result)
+        if enemy_monster.alive == True:
+            if enemy_monster.cooldown1 <= 0:
+                enemy_attack = enemy_monster.special_attack1
+            elif enemy_monster.cooldown2 <= 0:
+                enemy_attack = enemy_monster.special_attack2
+            else:
+                enemy_attack = enemy_monster.basic_attack
+            result = enemy_attack(char)
+            message_log.append(result)
     else:
         if enemy_monster.cooldown1 <= 0:
             enemy_attack = enemy_monster.special_attack1
@@ -288,15 +289,16 @@ def Turn(action, enemy_monster, char, message_log):
             enemy_attack = enemy_monster.basic_attack
         result = enemy_attack(char)
         message_log.append(result)
-        if action == "attack":
-            result = char.basic_attack(enemy_monster)
-            message_log.append(result)
-        elif action == "special_01":
-            result = char.special_attack1(enemy_monster)
-            message_log.append(result)
-        elif action == "special_02":
-            result = char.special_attack2(enemy_monster)
-            message_log.append(result)
+        if char.alive == True:
+            if action == "attack":
+                result = char.basic_attack(enemy_monster)
+                message_log.append(result)
+            elif action == "special_01":
+                result = char.special_attack1(enemy_monster)
+                message_log.append(result)
+            elif action == "special_02":
+                result = char.special_attack2(enemy_monster)
+                message_log.append(result)
     char.cooldown1 -= 1
     char.cooldown2 -= 1
     enemy_monster.cooldown1 -= 1
@@ -471,23 +473,59 @@ def game_loop(state):
             button_1_select = pygame.Rect(50, 700, 200, 150)
             button_2_select = pygame.Rect(500, 700, 200, 150)
             button_3_select = pygame.Rect(1000, 700, 200, 150)
+            executed = True
         if game_State == "Upgrade_Menu":
-            message_display(message_log, font)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_pos = pygame.mouse.get_pos()
-                    if button_1_select.collidepoint(mouse_pos):
+            if timer > 100:
+                screen.fill(GREYISH)
+                message_display(message_log, font)
+                pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
+                draw_text("Attack", RED, 50, 700, 24, center=False)
+                pygame.draw.rect(screen, RED, (500, 700, 200, 150))
+                draw_text("Defense", BLUE, 500, 700, 24, center=False)
+                pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
+                draw_text("Speed", YELLOW, 1000, 700, 24, center=False)
+                button_1_select = pygame.Rect(50, 700, 200, 150)
+                button_2_select = pygame.Rect(500, 700, 200, 150)
+                button_3_select = pygame.Rect(1000, 700, 200, 150)
+            if event.type == pygame.MOUSEBUTTONDOWN and timer > 100:
+                mouse_pos = pygame.mouse.get_pos()
+                if button_1_select.collidepoint(mouse_pos):
+                    if upgrade_tokens > 0:
                         char.attack += 5
                         char.cooldown1 = 0
                         char.cooldown2 = 0
                         message_log.append(f"{char.name} has gained 5 attack!")
-                    elif button_2_select.collidepoint(mouse_pos):
+                        upgrade_tokens -= 1
+                        timer = 0
+                elif button_2_select.collidepoint(mouse_pos):
+                    if upgrade_tokens > 0:
                         char.health = char.max_health + 5
                         char.max_health += 5
                         char.defense += 5
                         message_log.append(f"{char.name} has gained 5 health and 5 defense!")
-                    elif button_3_select.collidepoint(mouse_pos):
+                        upgrade_tokens -= 1
+                        timer = 0
+                elif button_3_select.collidepoint(mouse_pos):
+                    if upgrade_tokens > 0:
                         char.speed += 5
                         message_log.append(f"{char.name} has gained 5 speed!")
+                        upgrade_tokens -= 1
+                        timer = 0
+                if upgrade_tokens == 0:
+                    message_log.append("You have no more upgrade tokens!")
+                    game_State = "Reset_Battle"
+                    executed = False
+            timer += 1
+        if game_State == "Reset_Battle" and not executed:
+            enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
+            enemy_monster.health = enemy_monster.max_health + 5
+            enemy_monster.max_health += 5
+            enemy_monster.attack = enemy_monster.attack + 5
+            enemy_monster.defense = enemy_monster.defense
+            enemy_monster.speed = enemy_monster.speed
+            enemy_monster.alive = True
+            game_State = "Battle"
+            executed = True
         pygame.display.update()
         pygame.display.flip()
     pygame.quit()
