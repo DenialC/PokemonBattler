@@ -1,7 +1,5 @@
 import pygame
 import random
-import math
-import time
 
 pygame.init()
 
@@ -9,28 +7,28 @@ WIDTH, HEIGHT = 1500, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Randomon")
 
-dracula_img = pygame.image.load('dracula.png')
-dracula = pygame.transform.scale(dracula_img, (250, 250))
+dracula = pygame.image.load('dracula.png')
+dracula = pygame.transform.scale(dracula, (250, 250))
 dracula_flipped = pygame.transform.flip(dracula, True, False) 
 
-spino_img = pygame.image.load('spino.png')
-spino = pygame.transform.scale(spino_img, (250, 250))
+spino = pygame.image.load('spino.png')
+spino = pygame.transform.scale(spino, (250, 250))
 spino_flipped = pygame.transform.flip(spino, True, False)  
 
-nether_img = pygame.image.load('nether.png')
-nether_flipped = pygame.transform.scale(nether_img, (250, 250))
+nether = pygame.image.load('nether.png')
+nether_flipped = pygame.transform.scale(nether, (250, 250))
 nether = pygame.transform.flip(nether_flipped, True, False)
 
-j_img = pygame.image.load('jmoney.png')
-j = pygame.transform.scale(j_img, (250, 250))
+j = pygame.image.load('jmoney.png')
+j = pygame.transform.scale(j, (250, 250))
 j_flipped = pygame.transform.flip(j, True, False)
 
-adv_img = pygame.image.load('adv.png')
-adv = pygame.transform.scale(adv_img, (250, 250))
+adv = pygame.image.load('adv.png')
+adv = pygame.transform.scale(adv, (250, 250))
 adv_flipped = pygame.transform.flip(adv, True, False)
 
-fire_img = pygame.image.load('fireball.png')
-fire = pygame.transform.scale(fire_img, (100, 100))
+fire = pygame.image.load('fireball.png')
+fire = pygame.transform.scale(fire, (100, 100))
 fire_flipped = pygame.transform.flip(fire, True, False)
 
 background_image = pygame.image.load("arena.png").convert()
@@ -39,18 +37,16 @@ background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 scoreboard_imag = pygame.image.load("scoreboard.png").convert_alpha() # had some transparency issues so using convert_alpha here and henceforth
 scoreboard_image = pygame.transform.scale(scoreboard_imag, (550, 250))
 
-icon_radius = 150
-icon1_imag = pygame.image.load('icon1.png').convert_alpha()
-icon1_image = pygame.transform.scale(icon1_imag, (icon_radius, icon_radius))
-icon2_imag = pygame.image.load('icon2.png').convert_alpha()
-icon2_image = pygame.transform.scale(icon2_imag, (icon_radius, icon_radius))
-icon3_imag = pygame.image.load('icon3.png').convert_alpha()
-icon3_image = pygame.transform.scale(icon3_imag, (icon_radius, icon_radius))
+icon1_image = pygame.image.load('icon1.png').convert_alpha()
+icon1_image = pygame.transform.scale(icon1_image, (150, 150))
+icon2_image = pygame.image.load('icon2.png').convert_alpha()
+icon2_image = pygame.transform.scale(icon2_image, (150, 150))
+icon3_image = pygame.image.load('icon3.png').convert_alpha()
+icon3_image = pygame.transform.scale(icon3_image, (150, 150))
 
 GREYISH = (55, 55, 55)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
-BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 BLUE = (0, 0, 255)
 ORANGE = (255, 165, 0)
@@ -79,7 +75,6 @@ class Particle:
 
 class Monster:    
     def __init__(self, health, attack, defense, speed, name, x, y, width, height, image, flipped_image):
-        self.health = health
         self.attack = attack
         self._current_health = health
         self.max_health = health
@@ -118,6 +113,7 @@ class Monster:
     def basic_attack(self, target):
         damage = target.take_damage(self.attack)
         return f"{self.name} attacks {target.name} for {damage} damage!"
+    
     def special_attack1(self, target):
         pass 
 
@@ -140,8 +136,6 @@ class Monster:
             self.cooldown1 += 1
             self.cooldown2 += 1
             return f"{self.name} is stunned and has its cooldowns increased!"
-        #if self.stun > 0:
-        #    self.attack -= 5
 
 class Dracula(Monster):
     def __init__(self, x, y):
@@ -155,7 +149,6 @@ class Dracula(Monster):
         self.cooldown1 = 2
         return f"{self.name} uses Vampiric Bite on {target.name} for {damage} damage and heals for {damage//2} health!"
     
-
     def special_attack2(self, target):
         damage = target.take_damage(self.attack * 3 + random.randint(1, 10))
         target.defense = max(0, target.defense - 6)
@@ -206,14 +199,6 @@ class Cleric(Monster):
         damage = self.attack * 3 + target.defense - random.randint(1,15)
         target.take_damage(damage)
         self.cooldown1 = 2
-        #timer69 = 0
-        #x = self.x
-        #y = self.y
-        #while timer69 < 1000:
-        #    if timer69%5 == 0:
-        #        screen.blit(fire, (x, y))
-        #        x += 10
-        #    timer69 += 1
         return f"{self.name} uses Divine Smite on {target.name} for {damage - target.defense} damage, ignoring all defense!"
 
     def special_attack2(self, target):
@@ -246,10 +231,8 @@ class Adventurer(Monster):
             return f"{self.name} uses Ambush on {target.name} but it fails and damages itself for {damage} damage!"
 
 def message_display(message_log, font):
-    log_y = 650
     for i, message in enumerate(message_log[-5:]): 
-        message_text = font.render(message, True, ORANGE)
-        screen.blit(message_text, (550, log_y + i * 20))
+        screen.blit(font.render(message, True, ORANGE), (550, 650 + i * 20))
 
 def draw_text(msg, color, x, y, size, center=True):
     font = pygame.font.SysFont("Trebuchet MS", size)
@@ -272,8 +255,6 @@ def Turn(action, enemy_monster, char, message_log):
         elif action == "special_02":
             result = char.special_attack2(enemy_monster)
             message_log.append(result)
-        message_display(message_log, pygame.font.SysFont(None, 24))
-        time.sleep(random.randint(1,3))
         if enemy_monster.alive == True:
             if enemy_monster.cooldown1 <= 0:
                 enemy_attack = enemy_monster.special_attack1
@@ -292,8 +273,6 @@ def Turn(action, enemy_monster, char, message_log):
             enemy_attack = enemy_monster.basic_attack
         result = enemy_attack(char)
         message_log.append(result)
-        message_display(message_log, pygame.font.SysFont(None, 24))
-        time.sleep(random.randint(1,3))
         if char.alive == True:
             if action == "attack":
                 result = char.basic_attack(enemy_monster)
@@ -304,17 +283,17 @@ def Turn(action, enemy_monster, char, message_log):
             elif action == "special_02":
                 result = char.special_attack2(enemy_monster)
                 message_log.append(result)
-    char.cooldown1 -= 1
-    char.cooldown2 -= 1
-    enemy_monster.cooldown1 -= 1
-    enemy_monster.cooldown2 -= 1
+    char.cooldown1 = min(char.cooldown1 - 1, 0)
+    char.cooldown2 = min(char.cooldown2 - 1, 0)
+    enemy_monster.cooldown1 = min(enemy_monster.cooldown1 - 1, 0)
+    enemy_monster.cooldown2 = min(enemy_monster.cooldown2 - 1, 0)
     return message_log
 
 def game_loop(state):
     game_State = state
     running = True
     executed = False
-    curr = False
+    curr = False # this idle_counter and curr variable seem very scuffed and can be optimised
     idle_counter = 0
     row = 0
     timer3 = 0
@@ -341,7 +320,6 @@ def game_loop(state):
             button_2_select = pygame.Rect(500, 700, 200, 150)
             button_3_select = pygame.Rect(1000, 700, 200, 150)
             executed = True
-            pygame.display.update()
         if game_State == "Menu":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -381,11 +359,8 @@ def game_loop(state):
                 screen.blit(icon1_image, (0, 650))
                 screen.blit(icon2_image, (0, 350))
                 screen.blit(icon3_image, (0, 50))
-                #pygame.draw.rect(screen, GREEN, (0, 650, 200, 150))
                 draw_text("Basic Attack", RED, 25, 650, 24, center=False)
-                #pygame.draw.rect(screen, RED, (0, 350, 200, 150))
                 draw_text(char.name3, BLUE, 25, 350, 24, center=False)
-                #pygame.draw.rect(screen, BLUE, (0, 50, 200, 150))
                 draw_text(char.name4, YELLOW, 25, 50, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
