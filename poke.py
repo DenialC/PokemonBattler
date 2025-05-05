@@ -7,6 +7,15 @@ WIDTH, HEIGHT = 1500, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Randomon")
 
+container = pygame.image.load('cont.png')
+container = pygame.transform.scale(container, (350, 400))
+
+glass = pygame.image.load('glass.png')
+glass = pygame.transform.scale(glass, (325, 300))
+
+lid = pygame.image.load('lid.png')
+lid = pygame.transform.scale(lid, (325, 100))
+
 dracula = pygame.image.load('dracula.png')
 dracula = pygame.transform.scale(dracula, (250, 250))
 dracula_flipped = pygame.transform.flip(dracula, True, False) 
@@ -58,6 +67,7 @@ BLUE = (0, 0, 255)
 ORANGE = (255, 165, 0)
 
 particles = []
+
 
 class Particle:
     def __init__(self, x, y, color, velocity, lifespan):
@@ -336,23 +346,59 @@ def game_loop(state):
             screen.fill(GREYISH)
             scaling = 1
             draw_text('Welcome to "Definitely Not Pokemon"', ORANGE, 750, 100, 64)
-            draw_text('Choose your character!', ORANGE, 750, 200, 48)
-            draw_text('Click on the character to select them!', ORANGE, 750, 300, 24)
-            draw_text('If you ever need more (i)nformation press i', ORANGE, 750, 400, 24)
-            pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
+            draw_text('Choose your character!', ORANGE, 750, 175, 48)
+            draw_text('If you ever need more (i)nformation press i', ORANGE, 750, 230, 24)
+            screen.blit(container, (50, 450))
+            screen.blit(container, (500, 450))
+            screen.blit(container, (1000, 450))
             txt3 = random.choice(["Spinosaurus", "Witch"])
-            draw_text(txt3, RED, 50, 700, 24, center=False)
-            pygame.draw.rect(screen, RED, (500, 700, 200, 150))
+            draw_text(txt3, RED, 150, 350, 24, center=False)
+            if txt3 == "Spinosaurus":
+                screen.blit(spino, (100, 580))
+            else:
+                screen.blit(witch, (100, 580))
             txt2 = random.choice(["Adventurer", "Dracula"])
-            draw_text(txt2, BLUE, 500, 700, 24, center=False)
-            pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
+            draw_text(txt2, BLUE, 600, 350, 24, center=False)
+            if txt2 == "Adventurer":
+                screen.blit(adv, (550, 580))
+            else:
+                screen.blit(dracula, (550, 580))
             txt1 = random.choice(["Cleric", "Neanderthal"])
-            draw_text(txt1, YELLOW, 1000, 700, 24, center=False)
-            button_1_select = pygame.Rect(50, 700, 200, 150)
-            button_2_select = pygame.Rect(500, 700, 200, 150)
-            button_3_select = pygame.Rect(1000, 700, 200, 150)
+            if txt1 == "Cleric":
+                screen.blit(j, (1050, 580))
+            else:
+                screen.blit(nether, (1050, 580))
+            draw_text(txt1, YELLOW, 1100, 350, 24, center=False)
+            button_1_select = pygame.Rect(50, 550, 200, 150)
+            button_2_select = pygame.Rect(500, 550, 200, 150)
+            button_3_select = pygame.Rect(1000, 550, 200, 150)
             executed = True
         if game_State == "Menu":
+            mouse_pos = pygame.mouse.get_pos()
+            if button_1_select.collidepoint(mouse_pos):
+                pygame.draw.rect(screen, GREYISH, (50, 450, 350, 550))
+                screen.blit(glass, (60, 550))
+                screen.blit(lid, (60, 400))
+                if txt3 == "Spinosaurus":
+                    screen.blit(spino, (100, 580))
+                else:
+                    screen.blit(witch, (100, 580))
+            elif button_2_select.collidepoint(mouse_pos):
+                pygame.draw.rect(screen, GREYISH, (500, 450, 350, 550))
+                screen.blit(glass, (510, 550))
+                screen.blit(lid, (510, 400))
+                if txt2 == "Adventurer":
+                    screen.blit(adv, (550, 580))
+                else:
+                    screen.blit(dracula, (550, 580))
+            elif button_3_select.collidepoint(mouse_pos):
+                pygame.draw.rect(screen, GREYISH, (1000, 450, 350, 550))
+                screen.blit(glass, (1010, 550))
+                screen.blit(lid, (1010, 400))
+                if txt1 == "Cleric":
+                    screen.blit(j, (1050, 580))
+                else:
+                    screen.blit(nether, (1050, 580))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if button_1_select.collidepoint(mouse_pos):
@@ -379,7 +425,7 @@ def game_loop(state):
                 enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
             keys = pygame.key.get_pressed()
             if keys[pygame.K_i]:
-                draw_text("Really? Already? It's a menu. Come on, you can do better than that", ORANGE, 550, 500, 24)
+                draw_text("!I! Really? Already? It's a menu. Come on, you can do better than that", ORANGE, 412, 50, 24)
         if game_State == "Battle" and not executed:
             screen.fill(GREYISH)
             screen.blit(background_image, (0, 0))
@@ -560,7 +606,7 @@ def game_loop(state):
             timer += 1
         if game_State == "Reset_Battle" and not executed:
             scaling += 1
-            enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
+            enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
             enemy_monster._current_health = enemy_monster.max_health + 5 * scaling
             enemy_monster.max_health += 5 * scaling
             enemy_monster.attack = enemy_monster.attack + 5 * scaling
