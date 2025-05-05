@@ -319,6 +319,7 @@ def game_loop(state):
     game_State = state
     running = True
     executed = False
+    scaling = 1
     curr = False # current direction stored as a bool, i.e. up/down, true/false
     idle_counter = 0 #amount of frames the character has been going in a certain direction within the idle animation
     row = 0
@@ -333,6 +334,7 @@ def game_loop(state):
                 running = False
         if game_State == "Menu" and not executed:
             screen.fill(GREYISH)
+            scaling = 1
             draw_text('Welcome to "Definitely Not Pokemon"', ORANGE, 750, 100, 64)
             draw_text('Choose your character!', ORANGE, 750, 200, 48)
             draw_text('Click on the character to select them!', ORANGE, 750, 300, 24)
@@ -557,12 +559,13 @@ def game_loop(state):
                     executed = False
             timer += 1
         if game_State == "Reset_Battle" and not executed:
+            scaling += 1
             enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
-            enemy_monster._current_health = enemy_monster.max_health + 5
-            enemy_monster.max_health += 5
-            enemy_monster.attack = enemy_monster.attack + 5
-            enemy_monster.defense = enemy_monster.defense
-            enemy_monster.speed = enemy_monster.speed
+            enemy_monster._current_health = enemy_monster.max_health + 5 * scaling
+            enemy_monster.max_health += 5 * scaling
+            enemy_monster.attack = enemy_monster.attack + 5 * scaling
+            enemy_monster.defense = enemy_monster.defense * scaling
+            enemy_monster.speed = enemy_monster.speed * scaling
             enemy_monster.alive = True
             game_State = "Battle"
             executed = True
