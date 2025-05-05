@@ -31,6 +31,10 @@ fire = pygame.image.load('fireball.png')
 fire = pygame.transform.scale(fire, (100, 100))
 fire_flipped = pygame.transform.flip(fire, True, False)
 
+witch = pygame.image.load('witch.png')
+witch = pygame.transform.scale(witch, (250, 250))
+witch_flipped = pygame.transform.flip(witch, True, False)
+
 background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
@@ -104,7 +108,7 @@ class Monster:
         if self._current_health == 0:
             self.alive = False
         for i in range(75):
-            particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-5,5), random.uniform(-5,5)), 25))
+            particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-3,3), random.uniform(-3,3)), 50))
         return actual_damage
 
     def heal(self, amount):
@@ -112,6 +116,7 @@ class Monster:
 
     def basic_attack(self, target):
         damage = target.take_damage(self.attack)
+        target.update()
         return f"{self.name} attacks {target.name} for {damage} damage!"
     
     def special_attack1(self, target):
@@ -133,8 +138,8 @@ class Monster:
             return f"{self.name} is poisoned and takes 5 damage!"
         self.stun = max(0, self.stun - 1)
         if self.stun > 0:
-            self.cooldown1 += 1
-            self.cooldown2 += 1
+            self.cooldown1 += 2
+            self.cooldown2 += 2
             return f"{self.name} is stunned and has its cooldowns increased!"
 
 class Dracula(Monster):
@@ -154,6 +159,24 @@ class Dracula(Monster):
         target.defense = max(0, target.defense - 6)
         self.cooldown2 = 2
         return f"{self.name} uses Blood Drain on {target.name} for {damage} damage and lowers their defense by 6!"
+
+class Witch(Monster):
+    def __init__(self, x, y):
+        super().__init__(100, 12, 6, 49, "Witch", x, y, 50, 50, witch, witch_flipped)
+        self.name3 = "Poisonous Brew"
+        self.name4 = "Stunning Concotion"
+
+    def special_attack1(self, target):
+        target.poison += 5
+        target.update()
+        self.cooldown1 = 2
+        return f"{self.name} uses Poisonous Brew on {target.name} which poisons them for 5 turns!"
+    
+    def special_attack2(self, target):
+        target.stun += 5
+        self.cooldown2 = 2
+        target.update()
+        return f"{self.name} uses Stunning Concotion on {target.name} which stuns them for 5 turns!"
 
 class Spinosaurus(Monster): # perhaps add another class to switch out from the spino like all the other classes have
     def __init__(self, x, y):
@@ -283,20 +306,19 @@ def Turn(action, enemy_monster, char, message_log):
             elif action == "special_02":
                 result = char.special_attack2(enemy_monster)
                 message_log.append(result)
-    char.cooldown1 = min(char.cooldown1 - 1, 0)
-    char.cooldown2 = min(char.cooldown2 - 1, 0)
-    enemy_monster.cooldown1 = min(enemy_monster.cooldown1 - 1, 0)
-    enemy_monster.cooldown2 = min(enemy_monster.cooldown2 - 1, 0)
+    char.cooldown1 = max(char.cooldown1 - 1, 0)
+    char.cooldown2 = max(char.cooldown2 - 1, 0)
+    enemy_monster.cooldown1 = max(enemy_monster.cooldown1 - 1, 0)
+    enemy_monster.cooldown2 = max(enemy_monster.cooldown2 - 1, 0)
     return message_log
 
 def game_loop(state):
     game_State = state
     running = True
     executed = False
-    curr = False # this idle_counter and curr variable seem very scuffed and can be optimised
-    idle_counter = 0
+    curr = False # current direction stored as a bool, i.e. up/down, true/false
+    idle_counter = 0 #amount of frames the character has been going in a certain direction within the idle animation
     row = 0
-    timer3 = 0
     message_log = []
     timer = 0
     global particles
@@ -309,7 +331,8 @@ def game_loop(state):
             screen.fill(GREYISH)
             message_log.append("Choose your fighter to begin!")
             pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
-            draw_text("Spinosaurus", RED, 50, 700, 24, center=False)
+            txt3 = random.choice(["Spinosaurus", "Witch"])
+            draw_text(txt3, RED, 50, 700, 24, center=False)
             pygame.draw.rect(screen, RED, (500, 700, 200, 150))
             txt2 = random.choice(["Adventurer", "Dracula"])
             draw_text(txt2, BLUE, 500, 700, 24, center=False)
@@ -324,7 +347,10 @@ def game_loop(state):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if button_1_select.collidepoint(mouse_pos):
-                    char = Spinosaurus(200, 450)
+                    if txt3 == "Spinosaurus":
+                        char = Spinosaurus(200, 450)
+                    elif txt3 == "Witch":
+                        char = Witch(200, 450)
                     game_State = "Battle"
                     executed = False
                 elif button_2_select.collidepoint(mouse_pos):
@@ -341,7 +367,7 @@ def game_loop(state):
                         char = Neanderthal(200, 450)
                     game_State = "Battle"
                     executed = False
-                enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450)])
+                enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
         if game_State == "Battle" and not executed:
             screen.fill(GREYISH)
             screen.blit(background_image, (0, 0))
@@ -350,7 +376,7 @@ def game_loop(state):
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
         if game_State == "Battle":
-            if char.alive and timer > 100:
+            if char.alive:
                 screen.blit(background_image, (0, 0))
                 screen.blit(scoreboard_image, (550, 550))
                 button_1_select = pygame.Rect(0, 650, 200, 150)
@@ -364,7 +390,7 @@ def game_loop(state):
                 draw_text(char.name4, YELLOW, 25, 50, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN and timer > 100: # this is where the error occurs, the button press is not registering
                     #error occurs when you press the button, the sprites buffer and layer
                     mouse_pos = pygame.mouse.get_pos()
                     if button_1_select.collidepoint(mouse_pos):
@@ -398,7 +424,7 @@ def game_loop(state):
                 game_State = "Upgrade_Menu"
                 executed = False
 
-            if timer3%10 == 0:
+            if timer%10 == 0:
                 if row == 12:
                     row = 0
                     if curr == False:
@@ -440,7 +466,6 @@ def game_loop(state):
                     message_text = font.render(message, True, ORANGE)
                     screen.blit(message_text, (50, 0 + i * 20))
             timer += 1
-            timer3 += 1
         if game_State == "Upgrade_Menu" and not executed:
             screen.fill(GREYISH)
             message_log.append("Choose your upgrade!")
