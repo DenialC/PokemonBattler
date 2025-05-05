@@ -39,7 +39,9 @@ background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
 scoreboard_imag = pygame.image.load("scoreboard.png").convert_alpha() # had some transparency issues so using convert_alpha here and henceforth
-scoreboard_image = pygame.transform.scale(scoreboard_imag, (550, 250))
+scoreboard_image = pygame.transform.scale(scoreboard_imag, (750, 250))
+
+message_log = []
 
 icon1_image = pygame.image.load('icon1.png').convert_alpha()
 icon1_image = pygame.transform.scale(icon1_image, (150, 150))
@@ -103,7 +105,7 @@ class Monster:
         self.rect.y += dy
 
     def take_damage(self, damage):
-        actual_damage = max(1, damage - self.defense)
+        actual_damage = max(1, damage - self.defense + random.randint(1, 5))
         self._current_health = max(0, self._current_health - actual_damage)
         if self._current_health == 0:
             self.alive = False
@@ -134,13 +136,14 @@ class Monster:
     def update(self):
         self.poison = max(0, self.poison - 1)
         if self.poison > 0:
-            self.take_damage(5)
-            return f"{self.name} is poisoned and takes 5 damage!"
+            self.take_damage(5+self.defense)
+            message_log.append(f"{self.name} is poisoned and takes 5 damage!")
         self.stun = max(0, self.stun - 1)
         if self.stun > 0:
+            self.attack = max(1, self.attack - 2)
             self.cooldown1 += 2
             self.cooldown2 += 2
-            return f"{self.name} is stunned and has its cooldowns increased!"
+            message_log.append(f"{self.name} is stunned and cannot attack!")
 
 class Dracula(Monster):
     def __init__(self, x, y):
@@ -162,7 +165,7 @@ class Dracula(Monster):
 
 class Witch(Monster):
     def __init__(self, x, y):
-        super().__init__(100, 12, 6, 49, "Witch", x, y, 50, 50, witch, witch_flipped)
+        super().__init__(125, 12, 2, 49, "Witch", x, y, 50, 50, witch, witch_flipped)
         self.name3 = "Poisonous Brew"
         self.name4 = "Stunning Concotion"
 
@@ -319,7 +322,8 @@ def game_loop(state):
     curr = False # current direction stored as a bool, i.e. up/down, true/false
     idle_counter = 0 #amount of frames the character has been going in a certain direction within the idle animation
     row = 0
-    message_log = []
+    global message_log
+    #message_log = []
     timer = 0
     global particles
     font = pygame.font.SysFont(None, 24)
@@ -329,7 +333,10 @@ def game_loop(state):
                 running = False
         if game_State == "Menu" and not executed:
             screen.fill(GREYISH)
-            message_log.append("Choose your fighter to begin!")
+            draw_text('Welcome to "Definitely Not Pokemon"', ORANGE, 750, 100, 64)
+            draw_text('Choose your character!', ORANGE, 750, 200, 48)
+            draw_text('Click on the character to select them!', ORANGE, 750, 300, 24)
+            draw_text('If you ever need more (i)nformation press i', ORANGE, 750, 400, 24)
             pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
             txt3 = random.choice(["Spinosaurus", "Witch"])
             draw_text(txt3, RED, 50, 700, 24, center=False)
@@ -368,17 +375,20 @@ def game_loop(state):
                     game_State = "Battle"
                     executed = False
                 enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_i]:
+                draw_text("Really? Already? It's a menu. Come on, you can do better than that", ORANGE, 550, 500, 24)
         if game_State == "Battle" and not executed:
             screen.fill(GREYISH)
             screen.blit(background_image, (0, 0))
-            screen.blit(scoreboard_image, (550, 550))
+            screen.blit(scoreboard_image, (750, 550))
             message_log.append(f"You chose {char.name}!")
             message_log.append(f"You are fighting {enemy_monster.name}")
             executed = True
         if game_State == "Battle":
             if char.alive:
                 screen.blit(background_image, (0, 0))
-                screen.blit(scoreboard_image, (550, 550))
+                screen.blit(scoreboard_image, (350, 550))
                 button_1_select = pygame.Rect(0, 650, 200, 150)
                 button_2_select = pygame.Rect(0, 350, 200, 150)
                 button_3_select = pygame.Rect(0, 50, 200, 150)
@@ -460,12 +470,37 @@ def game_loop(state):
             stats.append(f"Enemy attack: {enemy_monster.attack}")
             stats.append(f"Enemy defense: {enemy_monster.defense}")
             stats.append(f"Enemy speed: {enemy_monster.speed}")
+            for i, message in enumerate(stats[-8:]): 
+                message_text = font.render(message, True, ORANGE)
+                screen.blit(message_text, (1250, 20 + i * 20))
+            timer += 1
             keys = pygame.key.get_pressed()
             if keys[pygame.K_i]:
-                for i, message in enumerate(stats[-8:]): 
-                    message_text = font.render(message, True, ORANGE)
-                    screen.blit(message_text, (50, 0 + i * 20))
-            timer += 1
+                if enemy_monster.name == "Dracula":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a healing + damaging ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a damaging + render ability with a cooldown of {enemy_monster.cooldown2}!")
+                elif enemy_monster.name == "Witch":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a poison ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a stun ability with a cooldown of {enemy_monster.cooldown2}!")
+                elif enemy_monster.name == "Spinosaurus":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a healing ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a damaging + speed reduction ability with a cooldown of {enemy_monster.cooldown2}!")
+                elif enemy_monster.name == "Neanderthal":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a damage buff ability with a cooldown of {enemy_monster.cooldown2}!")
+                elif enemy_monster.name == "Cleric":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a healing + damaging ability with a cooldown of {enemy_monster.cooldown2}!")
+                elif enemy_monster.name == "Adventurer":
+                    message_log.clear()
+                    message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown2}!")
+            message_display(message_log, font)
         if game_State == "Upgrade_Menu" and not executed:
             screen.fill(GREYISH)
             message_log.append("Choose your upgrade!")
