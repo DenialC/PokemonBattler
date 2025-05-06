@@ -44,6 +44,18 @@ witch = pygame.image.load('witch.png')
 witch = pygame.transform.scale(witch, (250, 250))
 witch_flipped = pygame.transform.flip(witch, True, False)
 
+upground = pygame.image.load('upgrade_portal.png')
+upground = pygame.transform.scale(upground, (WIDTH, HEIGHT))
+
+health = pygame.image.load('health.png')
+health = pygame.transform.scale(health, (200, 150))
+
+attack = pygame.image.load('attack.png')
+attack = pygame.transform.scale(attack, (200, 150))
+
+speed = pygame.image.load('speed.png')
+speed = pygame.transform.scale(speed, (200, 150))
+
 background_image = pygame.image.load("arena.png").convert()
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
@@ -175,7 +187,7 @@ class Dracula(Monster):
 
 class Witch(Monster):
     def __init__(self, x, y):
-        super().__init__(125, 12, 2, 49, "Witch", x, y, 50, 50, witch, witch_flipped)
+        super().__init__(125, 12, 2, 49, "Witch", x, y, 50, 50, witch_flipped, witch)
         self.name3 = "Poisonous Brew"
         self.name4 = "Stunning Concotion"
 
@@ -338,6 +350,11 @@ def game_loop(state):
     timer = 0
     global particles
     font = pygame.font.SysFont(None, 24)
+    try:
+        with open("highscore.txt", "r") as file:
+            highscore = int(file.read().strip())
+    except FileNotFoundError:
+        highscore = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -426,6 +443,7 @@ def game_loop(state):
             keys = pygame.key.get_pressed()
             if keys[pygame.K_i]:
                 draw_text("!I! Really? Already? It's a menu. Come on, you can do better than that", ORANGE, 412, 50, 24)
+            draw_text(f"Highscore: {highscore}", ORANGE, 50, 10, 24, center=False)
         if game_State == "Battle" and not executed:
             screen.fill(GREYISH)
             screen.blit(background_image, (0, 0))
@@ -443,9 +461,9 @@ def game_loop(state):
                 screen.blit(icon1_image, (0, 650))
                 screen.blit(icon2_image, (0, 350))
                 screen.blit(icon3_image, (0, 50))
-                draw_text("Basic Attack", RED, 25, 650, 24, center=False)
-                draw_text(char.name3, BLUE, 25, 350, 24, center=False)
-                draw_text(char.name4, YELLOW, 25, 50, 24, center=False)
+                draw_text("Basic Attack", RED, 25, 625, 24, center=False)
+                draw_text(char.name3, BLUE, 25, 325, 24, center=False)
+                draw_text(char.name4, YELLOW, 25, 25, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
                 if event.type == pygame.MOUSEBUTTONDOWN and timer > 100: # this is where the error occurs, the button press is not registering
@@ -479,6 +497,8 @@ def game_loop(state):
                 message_log.append(f"{enemy_monster.name} has been slain!")
                 upgrade_tokens = random.randint(1, 3)
                 message_log.append(f"You have been awarded {upgrade_tokens} upgrade tokens!")
+                with open("highscore.txt", "w") as file:
+                    file.write(str(highscore))
                 game_State = "Upgrade_Menu"
                 executed = False
 
@@ -550,28 +570,44 @@ def game_loop(state):
                     message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown2}!")
             message_display(message_log, font)
         if game_State == "Upgrade_Menu" and not executed:
+            highscore += 1
             screen.fill(GREYISH)
             message_log.append("Choose your upgrade!")
-            pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
+            #pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
             draw_text("Attack", RED, 50, 700, 24, center=False)
-            pygame.draw.rect(screen, RED, (500, 700, 200, 150))
+            #pygame.draw.rect(screen, RED, (500, 700, 200, 150))
             draw_text("Defense", BLUE, 500, 700, 24, center=False)
-            pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
+            #pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
             draw_text("Speed", YELLOW, 1000, 700, 24, center=False)
             button_1_select = pygame.Rect(50, 700, 200, 150)
             button_2_select = pygame.Rect(500, 700, 200, 150)
             button_3_select = pygame.Rect(1000, 700, 200, 150)
+            timer = 100
             executed = True
         if game_State == "Upgrade_Menu":
             if timer > 100:
                 screen.fill(GREYISH)
-                message_display(message_log, font)
-                pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
-                draw_text("Attack", RED, 50, 700, 24, center=False)
-                pygame.draw.rect(screen, RED, (500, 700, 200, 150))
-                draw_text("Defense", BLUE, 500, 700, 24, center=False)
-                pygame.draw.rect(screen, BLUE, (1000, 700, 200, 150))
-                draw_text("Speed", YELLOW, 1000, 700, 24, center=False)
+                screen.blit(upground, (0, 0))
+                draw_text('Choose Thine Upgrades', ORANGE, 750, 100, 64)
+                draw_text('You have ' + str(upgrade_tokens) + ' upgrade tokens!', ORANGE, 750, 175, 48)
+                if char.name == "Spinosaurus":
+                    screen.blit(spino, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                elif char.name == "Witch":  
+                    screen.blit(witch, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                elif char.name == "Adventurer":
+                    screen.blit(adv, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                elif char.name == "Dracula":
+                    screen.blit(dracula, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                elif char.name == "Cleric":
+                    screen.blit(j, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                elif char.name == "Neanderthal":
+                    screen.blit(nether, (WIDTH/2 - 150, HEIGHT/2 - 100))
+                screen.blit(attack, (50, 700))
+                draw_text("Attack", RED, 50, 675, 24, center=False)
+                screen.blit(health, (500, 700))
+                draw_text("Defense", GREEN, 500, 675, 24, center=False)
+                screen.blit(speed, (1000, 700))
+                draw_text("Speed", YELLOW, 1000, 675, 24, center=False)
                 button_1_select = pygame.Rect(50, 700, 200, 150)
                 button_2_select = pygame.Rect(500, 700, 200, 150)
                 button_3_select = pygame.Rect(1000, 700, 200, 150)
