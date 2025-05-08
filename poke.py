@@ -1,5 +1,6 @@
 import pygame
 import random
+from pygame import gfxdraw # for "better" animations / smoother drawing
 
 pygame.init()
 
@@ -98,7 +99,7 @@ class Particle:
 
     def draw(self, surface):
         if self.lifespan > 0:
-            pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), int(self.size))
+            gfxdraw.filled_circle(surface, int(self.x), int(self.y), int(self.size), (*self.color, min(255, self.lifespan*6)))
 
 
 class Monster:    
@@ -127,12 +128,21 @@ class Monster:
         self.rect.y += dy
 
     def take_damage(self, damage):
-        actual_damage = max(1, damage - self.defense + random.randint(1, 5))
+        critical_hit = random.randint(1, 5)
+        if critical_hit >= 4:
+            message_log.append(f"{self.name} has been critically hit!")
+        actual_damage = max(1, damage - self.defense + critical_hit)
         self._current_health = max(0, self._current_health - actual_damage)
         if self._current_health == 0:
             self.alive = False
-        for i in range(75):
-            particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-3,3), random.uniform(-3,3)), 50))
+        if critical_hit >= 4:
+            for i in range(75):
+                particles.append(Particle(self.x + 125, self.y + 125, YELLOW, (random.uniform(-3,3), random.uniform(-3,3)), 50))
+                particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-3,3), random.uniform(-3,3)), 50))
+                #add sound here on critical hit
+        else:
+            for i in range(75):
+                particles.append(Particle(self.x + 125, self.y + 125, RED, (random.uniform(-3,3), random.uniform(-3,3)), 50))
         return actual_damage
 
     def heal(self, amount):
@@ -386,9 +396,9 @@ def game_loop(state):
             else:
                 screen.blit(nether, (1050, 580))
             draw_text(txt1, YELLOW, 1100, 350, 24, center=False)
-            button_1_select = pygame.Rect(50, 550, 200, 150)
-            button_2_select = pygame.Rect(500, 550, 200, 150)
-            button_3_select = pygame.Rect(1000, 550, 200, 150)
+            button_1_select = pygame.Rect(50, 450, 350, 400)
+            button_2_select = pygame.Rect(500, 450, 350, 400)
+            button_3_select = pygame.Rect(1000, 450, 350, 400)
             executed = True
         if game_State == "Menu":
             mouse_pos = pygame.mouse.get_pos()
