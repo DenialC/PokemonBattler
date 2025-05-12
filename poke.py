@@ -7,6 +7,11 @@ pygame.init()
 WIDTH, HEIGHT = 1500, 1000
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Randomon")
+clock = pygame.time.Clock()
+
+started = False # have to use all these variables as time.sleep() pauses the entire program instead of just the turn function
+wait_time = 2000 # this is in milliseconds
+start_ticks = 0
 
 container = pygame.image.load('cont.png')
 container = pygame.transform.scale(container, (350, 400))
@@ -36,10 +41,6 @@ j_flipped = pygame.transform.flip(j, True, False)
 adv = pygame.image.load('adv.png')
 adv = pygame.transform.scale(adv, (250, 250))
 adv_flipped = pygame.transform.flip(adv, True, False)
-
-fire = pygame.image.load('fireball.png')
-fire = pygame.transform.scale(fire, (100, 100))
-fire_flipped = pygame.transform.flip(fire, True, False)
 
 witch = pygame.image.load('witch.png')
 witch = pygame.transform.scale(witch, (250, 250))
@@ -122,6 +123,7 @@ class Monster:
         self.stun = 0
         self.cooldown1 = 0
         self.cooldown2 = 0
+        self.personality = random.randint(0,1) # 0 = aggressive, 1 = defensive
 
     def move(self, dx, dy):
         self.rect.x += dx
@@ -303,6 +305,7 @@ def draw_text(msg, color, x, y, size, center=True):
     screen.blit(screen_text, rect)
 
 def Turn(action, enemy_monster, char, message_log):
+    global start_ticks, started, wait_time
     if char.speed > enemy_monster.speed:
         if action == "attack":
             result = char.basic_attack(enemy_monster)
