@@ -1,89 +1,69 @@
 import pygame
-import random
-from pygame import gfxdraw # for "better" animations / smoother drawing
-
-pygame.init()
+import random # library imports
+import sys # for checking byte size of objects for data dictionary
+from pygame import gfxdraw
+pygame.init() # pygame initialisation
+pygame.mixer.init()
 
 WIDTH, HEIGHT = 1500, 1000
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Randomon")
+screen = pygame.display.set_mode((WIDTH, HEIGHT)) # more pygame initialisation
+pygame.display.set_caption("Sigil Wars")
 clock = pygame.time.Clock()
 
-started = False # have to use all these variables as time.sleep() pauses the entire program instead of just the turn function
-wait_time = 2000 # this is in milliseconds
-start_ticks = 0
-
-container = pygame.image.load('cont.png')
+background = pygame.image.load('background02.png')
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+message_log = [] # list to store messages
+particles = [] # list to store particles
+container = pygame.image.load('cont.png') # container image for title screen
 container = pygame.transform.scale(container, (350, 400))
-
-glass = pygame.image.load('glass.png')
+glass = pygame.image.load('glass.png') # glass image for title screen
 glass = pygame.transform.scale(glass, (325, 300))
-
-lid = pygame.image.load('lid.png')
+lid = pygame.image.load('lid.png') # lid image for title screen
 lid = pygame.transform.scale(lid, (325, 100))
-
-dracula = pygame.image.load('dracula.png')
+# note for the classes there are flipped and non-flipped images as you want a flipped image when the character is facing left and a non-flipped image when the character is facing right
+dracula = pygame.image.load('dracula.png') # dracula image
 dracula = pygame.transform.scale(dracula, (250, 250))
 dracula_flipped = pygame.transform.flip(dracula, True, False) 
-
-spino = pygame.image.load('spino.png')
+spino = pygame.image.load('spino.png') # spino image
 spino = pygame.transform.scale(spino, (250, 250))
 spino_flipped = pygame.transform.flip(spino, True, False)  
-
-nether = pygame.image.load('nether.png')
+nether = pygame.image.load('nether.png') # neanderthal image
 nether_flipped = pygame.transform.scale(nether, (250, 250))
 nether = pygame.transform.flip(nether_flipped, True, False)
-
-j = pygame.image.load('jmoney.png')
+j = pygame.image.load('jmoney.png') # cleric image
 j = pygame.transform.scale(j, (250, 250))
 j_flipped = pygame.transform.flip(j, True, False)
-
-adv = pygame.image.load('adv.png')
+adv = pygame.image.load('adv.png') # adventurer image
 adv = pygame.transform.scale(adv, (250, 250))
 adv_flipped = pygame.transform.flip(adv, True, False)
-
-witch = pygame.image.load('witch.png')
+witch = pygame.image.load('witch.png') # witch image
 witch = pygame.transform.scale(witch, (250, 250))
 witch_flipped = pygame.transform.flip(witch, True, False)
-
-upground = pygame.image.load('upgrade_portal.png')
-upground = pygame.transform.scale(upground, (WIDTH, HEIGHT))
-
-health = pygame.image.load('health.png')
+health = pygame.image.load('health.png') # health icon image
 health = pygame.transform.scale(health, (200, 150))
-
-attack = pygame.image.load('attack.png')
+attack = pygame.image.load('attack.png') # attack icon image
 attack = pygame.transform.scale(attack, (200, 150))
-
-speed = pygame.image.load('speed.png')
+speed = pygame.image.load('speed.png') # speed icon image
 speed = pygame.transform.scale(speed, (200, 150))
-
-background_image = pygame.image.load("arena.png").convert()
+background_image = pygame.image.load("arena.png").convert() # background image
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-
 scoreboard_imag = pygame.image.load("scoreboard.png").convert_alpha() # had some transparency issues so using convert_alpha here and henceforth
-scoreboard_image = pygame.transform.scale(scoreboard_imag, (750, 250))
-
-message_log = []
-
-icon1_image = pygame.image.load('icon1.png').convert_alpha()
+scoreboard_image = pygame.transform.scale(scoreboard_imag, (975, 300))
+icon1_image = pygame.image.load('icon1.png').convert_alpha() # attack icon 1
 icon1_image = pygame.transform.scale(icon1_image, (150, 150))
-icon2_image = pygame.image.load('icon2.png').convert_alpha()
+icon2_image = pygame.image.load('icon2.png').convert_alpha() # attack icon 2
 icon2_image = pygame.transform.scale(icon2_image, (150, 150))
-icon3_image = pygame.image.load('icon3.png').convert_alpha()
+icon3_image = pygame.image.load('icon3.png').convert_alpha() # attack icon 3
 icon3_image = pygame.transform.scale(icon3_image, (150, 150))
-
-GREYISH = (55, 55, 55)
+GREYISH = (55, 55, 55) # colours
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 BLUE = (0, 0, 255)
 ORANGE = (255, 165, 0)
+not_orange = (0, 90, 255)
 
-particles = []
-
-
-class Particle:
+class Particle: 
     def __init__(self, x, y, color, velocity, lifespan):
         self.x = x
         self.y = y
@@ -91,22 +71,19 @@ class Particle:
         self.velocity = velocity
         self.lifespan = lifespan
         self.size = random.randint(2, 5)
-
     def update(self):
         self.x += self.velocity[0]
         self.y += self.velocity[1]
         self.lifespan -= 1
         self.size = max(0, self.size - 0.05)
-
     def draw(self, surface):
         if self.lifespan > 0:
             gfxdraw.filled_circle(surface, int(self.x), int(self.y), int(self.size), (*self.color, min(255, self.lifespan*6)))
 
-
 class Monster:    
     def __init__(self, health, attack, defense, speed, name, x, y, width, height, image, flipped_image):
         self.attack = attack
-        self._current_health = health
+        self.current_health = health
         self.max_health = health
         self.defense = defense
         self.speed = speed
@@ -134,8 +111,8 @@ class Monster:
         if critical_hit >= 4:
             message_log.append(f"{self.name} has been critically hit!")
         actual_damage = max(1, damage - self.defense + critical_hit)
-        self._current_health = max(0, self._current_health - actual_damage)
-        if self._current_health == 0:
+        self.current_health = max(0, self.current_health - actual_damage)
+        if self.current_health == 0:
             self.alive = False
         if critical_hit >= 4:
             for i in range(75):
@@ -148,7 +125,7 @@ class Monster:
         return actual_damage
 
     def heal(self, amount):
-        self._current_health = min(self.max_health, self._current_health + amount)
+        self.current_health = min(self.max_health, self.current_health + amount)
 
     def basic_attack(self, target):
         damage = target.take_damage(self.attack)
@@ -189,13 +166,13 @@ class Dracula(Monster):
         damage = target.take_damage(self.attack * 2)
         self.heal(damage // 2)
         self.cooldown1 = 2
-        return f"{self.name} uses Vampiric Bite on {target.name} for {damage} damage and heals for {damage//2} health!"
+        return f"{self.name} uses Vampiric Bite for {damage} damage and heals for {damage//2} health!"
     
     def special_attack2(self, target):
         damage = target.take_damage(self.attack * 3 + random.randint(1, 10))
         target.defense = max(0, target.defense - 6)
         self.cooldown2 = 2
-        return f"{self.name} uses Blood Drain on {target.name} for {damage} damage and lowers their defense by 6!"
+        return f"{self.name} uses Blood Drain for {damage} damage and lowers their defense!"
 
 class Witch(Monster):
     def __init__(self, x, y):
@@ -207,13 +184,13 @@ class Witch(Monster):
         target.poison += 5
         target.update()
         self.cooldown1 = 2
-        return f"{self.name} uses Poisonous Brew on {target.name} which poisons them for 5 turns!"
+        return f"{self.name} uses Poisonous Brew on {target.name} which poisons them!"
     
     def special_attack2(self, target):
         target.stun += 5
         self.cooldown2 = 2
         target.update()
-        return f"{self.name} uses Stunning Concotion on {target.name} which stuns them for 5 turns!"
+        return f"{self.name} uses Stunning Concotion on {target.name} which stuns them!"
 
 class Spinosaurus(Monster): # perhaps add another class to switch out from the spino like all the other classes have
     def __init__(self, x, y):
@@ -231,7 +208,7 @@ class Spinosaurus(Monster): # perhaps add another class to switch out from the s
         damage = target.take_damage(self.attack * 3 + random.randint(1,20))
         target.speed = max(0, target.speed - 12)
         self.cooldown2 = 2
-        return f"{self.name} uses Crippling Tail Whip on {target.name} for {damage} damage and lowers their speed by 12!"
+        return f"{self.name} uses Crippling Tail Whip for {damage} damage and lowers their speed!"
 
 class Neanderthal(Monster):
     def __init__(self, x, y):
@@ -259,7 +236,7 @@ class Cleric(Monster):
         damage = self.attack * 3 + target.defense - random.randint(1,15)
         target.take_damage(damage)
         self.cooldown1 = 2
-        return f"{self.name} uses Divine Smite on {target.name} for {damage - target.defense} damage, ignoring all defense!"
+        return f"{self.name} uses Divine Smite on {target.name} for {damage - target.defense} damage"
 
     def special_attack2(self, target):
         self.cooldown2 = 2
@@ -277,18 +254,18 @@ class Adventurer(Monster):
         self.cooldown1 = 2
         damage = self.attack * 2
         target.take_damage(damage)
-        return f"{self.name} uses Molotov Bottle on {target.name} for {damage} damage!"
+        return f"{self.name} uses Molotov on {target.name} for {damage} damage!"
 
     def special_attack2(self, target):
         damage = random.randint(1, 20)
         if damage > 10:
             damage = damage * 3
             target.take_damage(damage)
-            return f"{self.name} uses Ambush on {target.name} for {damage} damage and preforms a critical hit!"
+            return f"{self.name} uses Ambush on {target.name} for {damage} damage"
         else:
             damage = damage * 3
             self.take_damage(damage)
-            return f"{self.name} uses Ambush on {target.name} but it fails and damages itself for {damage} damage!"
+            return f"{self.name} uses Ambush on {target.name} but it fails and damages itself"
 
 def message_display(message_log, font):
     for i, message in enumerate(message_log[-5:]): 
@@ -316,6 +293,7 @@ def Turn(action, enemy_monster, char, message_log):
         elif action == "special_02":
             result = char.special_attack2(enemy_monster)
             message_log.append(result)
+
         if enemy_monster.alive == True:
             if enemy_monster.cooldown1 <= 0:
                 enemy_attack = enemy_monster.special_attack1
@@ -373,11 +351,10 @@ def game_loop(state):
             if event.type == pygame.QUIT:
                 running = False
         if game_State == "Menu" and not executed:
-            screen.fill(GREYISH)
-            scaling = 1
-            draw_text('Welcome to "Definitely Not Pokemon"', ORANGE, 750, 100, 64)
-            draw_text('Choose your character!', ORANGE, 750, 175, 48)
-            draw_text('If you ever need more (i)nformation press i', ORANGE, 750, 230, 24)
+            screen.fill(not_orange)
+            draw_text('Welcome to Sigil Wars', ORANGE, 725, 100, 64)
+            draw_text('Choose your character!', ORANGE, 725, 175, 48)
+            draw_text('If you ever need more (i)nformation press i', ORANGE, 725, 230, 24)
             screen.blit(container, (50, 450))
             screen.blit(container, (500, 450))
             screen.blit(container, (1000, 450))
@@ -388,7 +365,7 @@ def game_loop(state):
             else:
                 screen.blit(witch, (100, 580))
             txt2 = random.choice(["Adventurer", "Dracula"])
-            draw_text(txt2, BLUE, 600, 350, 24, center=False)
+            draw_text(txt2, GREEN, 600, 350, 24, center=False)
             if txt2 == "Adventurer":
                 screen.blit(adv, (550, 580))
             else:
@@ -403,10 +380,12 @@ def game_loop(state):
             button_2_select = pygame.Rect(500, 450, 350, 400)
             button_3_select = pygame.Rect(1000, 450, 350, 400)
             executed = True
+            timer = 0
         if game_State == "Menu":
+            timer += 1
             mouse_pos = pygame.mouse.get_pos()
             if button_1_select.collidepoint(mouse_pos):
-                pygame.draw.rect(screen, GREYISH, (50, 450, 350, 550))
+                pygame.draw.rect(screen, not_orange, (50, 450, 350, 550))
                 screen.blit(glass, (60, 550))
                 screen.blit(lid, (60, 400))
                 if txt3 == "Spinosaurus":
@@ -414,7 +393,7 @@ def game_loop(state):
                 else:
                     screen.blit(witch, (100, 580))
             elif button_2_select.collidepoint(mouse_pos):
-                pygame.draw.rect(screen, GREYISH, (500, 450, 350, 550))
+                pygame.draw.rect(screen, not_orange, (500, 450, 350, 550))
                 screen.blit(glass, (510, 550))
                 screen.blit(lid, (510, 400))
                 if txt2 == "Adventurer":
@@ -422,37 +401,59 @@ def game_loop(state):
                 else:
                     screen.blit(dracula, (550, 580))
             elif button_3_select.collidepoint(mouse_pos):
-                pygame.draw.rect(screen, GREYISH, (1000, 450, 350, 550))
+                pygame.draw.rect(screen, not_orange, (1000, 450, 350, 550))
                 screen.blit(glass, (1010, 550))
                 screen.blit(lid, (1010, 400))
                 if txt1 == "Cleric":
                     screen.blit(j, (1050, 580))
                 else:
                     screen.blit(nether, (1050, 580))
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            else:
+                pygame.draw.rect(screen, not_orange, (50, 350, 350, 550))
+                screen.blit(container, (50, 450))
+                pygame.draw.rect(screen, not_orange, (1000, 350, 350, 550))
+                pygame.draw.rect(screen, not_orange, (500, 350, 350, 550))
+                screen.blit(container, (500, 450))
+                screen.blit(container, (1000, 450))
+                draw_text(txt3, RED, 150, 350, 24, center=False)
+                draw_text(txt2, GREEN, 600, 350, 24, center=False)
+                draw_text(txt1, YELLOW, 1100, 350, 24, center=False)
+                if txt1 == "Cleric":
+                    screen.blit(j, (1050, 580))
+                else:
+                    screen.blit(nether, (1050, 580))
+                if txt2 == "Adventurer":
+                    screen.blit(adv, (550, 580))
+                else:
+                    screen.blit(dracula, (550, 580))
+                if txt3 == "Spinosaurus":
+                    screen.blit(spino, (100, 580))
+                else:
+                    screen.blit(witch, (100, 580))
+            if event.type == pygame.MOUSEBUTTONDOWN and timer> 100:
                 mouse_pos = pygame.mouse.get_pos()
                 if button_1_select.collidepoint(mouse_pos):
                     if txt3 == "Spinosaurus":
-                        char = Spinosaurus(200, 450)
+                        char = Spinosaurus(175, 450)
                     elif txt3 == "Witch":
-                        char = Witch(200, 450)
+                        char = Witch(175, 450)
                     game_State = "Battle"
                     executed = False
                 elif button_2_select.collidepoint(mouse_pos):
                     if txt2 == "Adventurer":
-                        char = Adventurer(200, 450)
+                        char = Adventurer(175, 450)
                     elif txt2 == "Dracula":
-                        char = Dracula(200, 450)
+                        char = Dracula(175, 450)
                     game_State = "Battle"
                     executed = False
                 elif button_3_select.collidepoint(mouse_pos):
                     if txt1 == "Cleric":
-                        char = Cleric(200, 450)
+                        char = Cleric(175, 450)
                     elif txt1 == "Neanderthal":
-                        char = Neanderthal(200, 450)
+                        char = Neanderthal(175, 450)
                     game_State = "Battle"
                     executed = False
-                enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
+                enemy_monster = random.choice([Neanderthal(1150,450), Spinosaurus(1150,450), Dracula(1150,450), Cleric(1150,450), Adventurer(1150,450), Witch(1150,450)])
             keys = pygame.key.get_pressed()
             if keys[pygame.K_i]:
                 draw_text("!I! Really? Already? It's a menu. Come on, you can do better than that", ORANGE, 412, 50, 24)
@@ -467,7 +468,7 @@ def game_loop(state):
         if game_State == "Battle":
             if char.alive:
                 screen.blit(background_image, (0, 0))
-                screen.blit(scoreboard_image, (350, 550))
+                screen.blit(scoreboard_image, (275, 550))
                 button_1_select = pygame.Rect(0, 650, 200, 150)
                 button_2_select = pygame.Rect(0, 350, 200, 150)
                 button_3_select = pygame.Rect(0, 50, 200, 150)
@@ -479,8 +480,7 @@ def game_loop(state):
                 draw_text(char.name4, YELLOW, 25, 25, 24, center=False)
                 char.draw(screen, flip=False)  
                 enemy_monster.draw(screen, flip=True)  
-                if event.type == pygame.MOUSEBUTTONDOWN and timer > 100: # this is where the error occurs, the button press is not registering
-                    #error occurs when you press the button, the sprites buffer and layer
+                if event.type == pygame.MOUSEBUTTONDOWN and timer > 100:
                     mouse_pos = pygame.mouse.get_pos()
                     if button_1_select.collidepoint(mouse_pos):
                         action = "attack"
@@ -502,6 +502,7 @@ def game_loop(state):
                         else:
                             message_log.append(f"{char.name4} is on cooldown for {char.cooldown2} turns")
                             timer = 0
+            print(sys.getsizeof(char))
             if char.alive == False:
                 message_log.append(f"Mission failed, we'll get em next time!") # get sound effect for this off youtube
                 game_State = "Menu"
@@ -543,8 +544,8 @@ def game_loop(state):
                 particle.update()
             message_display(message_log, font)
             stats = []
-            stats.append(f"Player health: {char._current_health}")
-            stats.append(f"Enemy health: {enemy_monster._current_health}")
+            stats.append(f"Player health: {char.current_health}")
+            stats.append(f"Enemy health: {enemy_monster.current_health}")
             stats.append(f"Player attack: {char.attack}")
             stats.append(f"Player defense: {char.defense}")
             stats.append(f"Player speed: {char.speed}")
@@ -559,8 +560,8 @@ def game_loop(state):
             if keys[pygame.K_i]:
                 if enemy_monster.name == "Dracula":
                     message_log.clear()
-                    message_log.append(f"{enemy_monster.name} has a healing + damaging ability with a cooldown of {enemy_monster.cooldown1}!")
-                    message_log.append(f"{enemy_monster.name} has a damaging + render ability with a cooldown of {enemy_monster.cooldown2}!")
+                    message_log.append(f"{enemy_monster.name} has a healing ability with a cooldown of {enemy_monster.cooldown1}!")
+                    message_log.append(f"{enemy_monster.name} has a render ability with a cooldown of {enemy_monster.cooldown2}!")
                 elif enemy_monster.name == "Witch":
                     message_log.clear()
                     message_log.append(f"{enemy_monster.name} has a poison ability with a cooldown of {enemy_monster.cooldown1}!")
@@ -568,7 +569,7 @@ def game_loop(state):
                 elif enemy_monster.name == "Spinosaurus":
                     message_log.clear()
                     message_log.append(f"{enemy_monster.name} has a healing ability with a cooldown of {enemy_monster.cooldown1}!")
-                    message_log.append(f"{enemy_monster.name} has a damaging + speed reduction ability with a cooldown of {enemy_monster.cooldown2}!")
+                    message_log.append(f"{enemy_monster.name} has a speed reduction ability with a cooldown of {enemy_monster.cooldown2}!")
                 elif enemy_monster.name == "Neanderthal":
                     message_log.clear()
                     message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
@@ -576,7 +577,7 @@ def game_loop(state):
                 elif enemy_monster.name == "Cleric":
                     message_log.clear()
                     message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
-                    message_log.append(f"{enemy_monster.name} has a healing + damaging ability with a cooldown of {enemy_monster.cooldown2}!")
+                    message_log.append(f"{enemy_monster.name} has a healing ability with a cooldown of {enemy_monster.cooldown2}!")
                 elif enemy_monster.name == "Adventurer":
                     message_log.clear()
                     message_log.append(f"{enemy_monster.name} has a damaging ability with a cooldown of {enemy_monster.cooldown1}!")
@@ -585,6 +586,7 @@ def game_loop(state):
         if game_State == "Upgrade_Menu" and not executed:
             highscore += 1
             screen.fill(GREYISH)
+            screen.blit(background_image, (0, 0))
             message_log.append("Choose your upgrade!")
             #pygame.draw.rect(screen, GREEN, (50, 700, 200, 150))
             draw_text("Attack", RED, 50, 700, 24, center=False)
@@ -595,35 +597,34 @@ def game_loop(state):
             button_1_select = pygame.Rect(50, 700, 200, 150)
             button_2_select = pygame.Rect(500, 700, 200, 150)
             button_3_select = pygame.Rect(1000, 700, 200, 150)
-            timer = 100
+            timer = 0
             executed = True
         if game_State == "Upgrade_Menu":
-            if timer > 100:
-                screen.fill(GREYISH)
-                screen.blit(upground, (0, 0))
-                draw_text('Choose Thine Upgrades', ORANGE, 750, 100, 64)
-                draw_text('You have ' + str(upgrade_tokens) + ' upgrade tokens!', ORANGE, 750, 175, 48)
-                if char.name == "Spinosaurus":
-                    screen.blit(spino, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                elif char.name == "Witch":  
-                    screen.blit(witch, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                elif char.name == "Adventurer":
-                    screen.blit(adv, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                elif char.name == "Dracula":
-                    screen.blit(dracula, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                elif char.name == "Cleric":
-                    screen.blit(j, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                elif char.name == "Neanderthal":
-                    screen.blit(nether, (WIDTH/2 - 150, HEIGHT/2 - 100))
-                screen.blit(attack, (50, 700))
-                draw_text("Attack", RED, 50, 675, 24, center=False)
-                screen.blit(health, (500, 700))
-                draw_text("Defense", GREEN, 500, 675, 24, center=False)
-                screen.blit(speed, (1000, 700))
-                draw_text("Speed", YELLOW, 1000, 675, 24, center=False)
-                button_1_select = pygame.Rect(50, 700, 200, 150)
-                button_2_select = pygame.Rect(500, 700, 200, 150)
-                button_3_select = pygame.Rect(1000, 700, 200, 150)
+            screen.fill(GREYISH)
+            screen.blit(background, (0, 0))
+            draw_text('Choose Thine Upgrades', ORANGE, 750, 100, 64)
+            draw_text('You have ' + str(upgrade_tokens) + ' upgrade tokens!', ORANGE, 750, 175, 48)
+            if char.name == "Spinosaurus":
+                screen.blit(spino, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            elif char.name == "Witch":  
+                screen.blit(witch, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            elif char.name == "Adventurer":
+                screen.blit(adv, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            elif char.name == "Dracula":
+                screen.blit(dracula, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            elif char.name == "Cleric":
+                screen.blit(j, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            elif char.name == "Neanderthal":
+                screen.blit(nether, (WIDTH/2 - 150, HEIGHT/2 - 100))
+            screen.blit(attack, (50, 700))
+            draw_text("Attack", RED, 100, 675, 24, center=False)
+            screen.blit(health, (500, 700))
+            draw_text("Defense", GREEN, 550, 675, 24, center=False)
+            screen.blit(speed, (1000, 700))
+            draw_text("Speed", BLUE, 1050, 675, 24, center=False)
+            button_1_select = pygame.Rect(50, 700, 200, 150)
+            button_2_select = pygame.Rect(500, 700, 200, 150)
+            button_3_select = pygame.Rect(1000, 700, 200, 150)
             if event.type == pygame.MOUSEBUTTONDOWN and timer > 100:
                 mouse_pos = pygame.mouse.get_pos()
                 if button_1_select.collidepoint(mouse_pos):
@@ -636,7 +637,7 @@ def game_loop(state):
                         timer = 0
                 elif button_2_select.collidepoint(mouse_pos):
                     if upgrade_tokens > 0:
-                        char._current_health = char.max_health + 5
+                        char.current_health = char.max_health + 5
                         char.max_health += 5
                         char.defense += 5
                         message_log.append(f"{char.name} has gained 5 health and 5 defense!")
@@ -655,8 +656,8 @@ def game_loop(state):
             timer += 1
         if game_State == "Reset_Battle" and not executed:
             scaling += 1
-            enemy_monster = random.choice([Neanderthal(1000,450), Spinosaurus(1000,450), Dracula(1000,450), Cleric(1000,450), Adventurer(1000,450), Witch(1000,450)])
-            enemy_monster._current_health = enemy_monster.max_health + 5 * scaling
+            enemy_monster = random.choice([Neanderthal(1150,450), Spinosaurus(1150,450), Dracula(1150,450), Cleric(1150,450), Adventurer(1150,450), Witch(1150,450)])
+            enemy_monster.current_health = enemy_monster.max_health + 5 * scaling
             enemy_monster.max_health += 5 * scaling
             enemy_monster.attack = enemy_monster.attack + 5 * scaling
             enemy_monster.defense = enemy_monster.defense * scaling
