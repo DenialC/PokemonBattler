@@ -10,6 +10,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT)) # more pygame initialisation
 pygame.display.set_caption("Sigil Wars")
 clock = pygame.time.Clock()
 
+pygame.mixer.music.load('music.mp3') # music for the game
+pygame.mixer.music.set_volume(1) # set volume
+pygame.mixer.music.play(-1) # play the music on an infinite loop
+
 background = pygame.image.load('background02.png')
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 message_log = [] # list to store messages
